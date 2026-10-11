@@ -493,7 +493,49 @@ struct PTYPipe : public SerialPort::Pipe
 #elif defined(_WIN32)
 		if (config::SerialConsole && tty == 1)
 		{
-			if (AllocConsole())
+			if (config::SerialConsoleStdio)
+			{
+				// GUI applications do not inherit console std handles from a command prompt.
+				// Attach only when no usable handle was inherited, preserving redirected output.
+				HANDLE hStd = GetStdHandle(STD_OUTPUT_HANDLE);
+				if (hStd == nullptr || hStd == INVALID_HANDLE_VALUE)
+				{
+					if (!AttachConsole(ATTACH_PARENT_PROCESS))
+					{
+						DWORD error = GetLastError();
+						ERROR_LOG(BOOT, "Cannot AttachConsole(): error %lu", error);
+					}
+					hStd = GetStdHandle(STD_OUTPUT_HANDLE);
+				}
+
+				if (hStd == nullptr || hStd == INVALID_HANDLE_VALUE)
+				{
+					ERROR_LOG(BOOT, "Cannot get standard output handle for serial output");
+				}
+				else
+				{
+					tty = _open_osfhandle((intptr_t)hStd, _O_TEXT);
+					if (tty == -1)
+					{
+						ERROR_LOG(BOOT, "Cannot bind standard output for serial output: errno %d", errno);
+						tty = 1;
+					}
+					else if (_dup2(tty, fileno(stdout)) == -1)
+					{
+						ERROR_LOG(BOOT, "Cannot redirect stdout for serial output: errno %d", errno);
+						_close(tty);
+						tty = 1;
+					}
+					else if (!SetStdHandle(STD_OUTPUT_HANDLE, (HANDLE)_get_osfhandle(fileno(stdout))))
+					{
+						DWORD error = GetLastError();
+						ERROR_LOG(BOOT, "Cannot update standard output handle for serial output: error %lu", error);
+						_close(tty);
+						tty = 1;
+					}
+				}
+			}
+			else if (AllocConsole())
 			{
 				SetConsoleTitle(TEXT("Flycast Serial Output"));
 

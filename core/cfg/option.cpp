@@ -130,6 +130,9 @@ Option<int, false> VideoRoutingVRes("rend.VideoRoutingVRes", 720);
 // Misc
 
 Option<bool> SerialConsole("Debug.SerialConsoleEnabled");
+#ifdef _WIN32
+Option<bool> SerialConsoleStdio("Debug.SerialConsoleStdio", false);
+#endif
 Option<bool> SerialPTY("Debug.SerialPTY");
 Option<bool> GDB("Debug.GDBEnabled");
 Option<int> GDBPort("Debug.GDBPort", debugger::DEFAULT_PORT);

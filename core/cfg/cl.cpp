@@ -31,6 +31,9 @@ static void usage(const char *exe)
 	fprintf(stderr, "-config section:key=value,...  set a transient config value.\n");
 	fprintf(stderr, "                               Transient config values won't be saved to emu.cfg.\n");
 	fprintf(stderr, "-help                          display this help\n");
+#ifdef _WIN32
+	fprintf(stderr, "-serial-stdio, --serial-stdio  use inherited stdio for serial output\n");
+#endif
 }
 
 static void parseConfigOption(const std::string& str)
@@ -191,6 +194,13 @@ void parseCommandLine(int argc, const char * const argv[])
 				parseConfigOption(argv[++i]);
 			continue;
 		}
+#ifdef _WIN32
+		if (!strcmp(argv[i], "-serial-stdio") || !strcmp(argv[i], "--serial-stdio"))
+		{
+			setTransient("config", "Debug.SerialConsoleStdio", "yes");
+			continue;
+		}
+#endif
 		// macOS
 		if (!strncmp(argv[i], "-NSDocumentRevisions", 20)) {
 			i++;

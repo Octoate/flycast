@@ -486,6 +486,9 @@ extern Option<int, false> VideoRoutingVRes;
 // Misc
 
 extern Option<bool> SerialConsole;
+#ifdef _WIN32
+extern Option<bool> SerialConsoleStdio;
+#endif
 extern Option<bool> SerialPTY;
 extern Option<bool> GDB;
 extern Option<int> GDBPort;
