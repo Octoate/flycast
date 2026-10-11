@@ -48,10 +48,34 @@
 #include <nowide/args.hpp>
 #include <nowide/stackstring.hpp>
 #include <exception>
+#include <cstdio>
 
 #include <windows.h>
 #include <windowsx.h>
 #include <winsock2.h>
+
+#ifndef TARGET_UWP
+static void attachParentConsole(int argc)
+{
+	if (argc <= 1)
+		return;
+
+	HANDLE stdoutHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+	HANDLE stderrHandle = GetStdHandle(STD_ERROR_HANDLE);
+	bool redirectStdout = stdoutHandle == nullptr || stdoutHandle == INVALID_HANDLE_VALUE;
+	bool redirectStderr = stderrHandle == nullptr || stderrHandle == INVALID_HANDLE_VALUE;
+	if (!redirectStdout && !redirectStderr)
+		return;
+
+	if (!AttachConsole(ATTACH_PARENT_PROCESS) && GetConsoleWindow() == nullptr)
+		return;
+
+	if (redirectStdout)
+		freopen("CONOUT$", "w", stdout);
+	if (redirectStderr)
+		freopen("CONOUT$", "w", stderr);
+}
+#endif
 
 static void setupPath()
 {
@@ -312,6 +336,9 @@ int remove(char const *name)
 
 int main(int argc, char* argv[])
 {
+#ifndef TARGET_UWP
+	attachParentConsole(argc);
+#endif
 	nowide::args _(argc, argv);
 
 	WSADATA wsaData;
