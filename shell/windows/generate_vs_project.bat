@@ -12,7 +12,7 @@ set "GIT_EXE="
 
 call :find_vs
 if not defined VS_INSTALL (
-    echo Visual Studio Community 2022 with Desktop development for C++ is required.
+    echo Visual Studio Community 2026 with Desktop development for C++ is required.
     set "install_vs=n"
     set /p install_vs="Install it now? This may show a Windows administrator prompt. [y/N]: "
     if /i "!install_vs!"=="y" (
@@ -23,7 +23,7 @@ if not defined VS_INSTALL (
 
 if not defined VS_INSTALL (
     echo.
-    echo Visual Studio 2022 with MSVC x64/x86 build tools was not found.
+    echo Visual Studio 2026 with MSVC x64/x86 build tools was not found.
     echo Install "Desktop development with C++" from:
     echo https://visualstudio.microsoft.com/vs/community/
     goto :fail
@@ -67,8 +67,8 @@ if not exist "core\deps\glslang\CMakeLists.txt" (
 )
 
 echo.
-echo Generating Visual Studio 2022 x64 project...
-"%CMAKE_EXE%" -B build -G "Visual Studio 17 2022" -A x64 -DUSE_DX9=OFF
+echo Generating Visual Studio 2026 x64 project...
+"%CMAKE_EXE%" -B build -G "Visual Studio 18 2026" -A x64 -DUSE_DX9=OFF
 if errorlevel 1 goto :fail
 
 call :say_success "Visual Studio project generated."
@@ -105,7 +105,7 @@ goto :done
 :find_vs
 set "VS_INSTALL="
 if exist "%VSWHERE%" (
-    for /f "usebackq delims=" %%i in (`"%VSWHERE%" -latest -products * -version [17.0^,18.0^) -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`) do (
+    for /f "usebackq delims=" %%i in (`"%VSWHERE%" -latest -products * -version [18.0^,19.0^) -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`) do (
         set "VS_INSTALL=%%i"
     )
 )
@@ -178,11 +178,11 @@ exit /b %errorlevel%
 
 :install_vs_community
 set "INSTALLER=%TEMP%\vs_community.exe"
-echo Downloading Visual Studio Community 2022 bootstrapper...
-powershell -NoProfile -ExecutionPolicy Bypass -Command "Invoke-WebRequest -Uri 'https://aka.ms/vs/17/release/vs_Community.exe' -OutFile $env:TEMP\vs_community.exe"
+echo Downloading Visual Studio Community 2026 bootstrapper...
+powershell -NoProfile -ExecutionPolicy Bypass -Command "Invoke-WebRequest -Uri 'https://aka.ms/vs/18/release/vs_Community.exe' -OutFile $env:TEMP\vs_community.exe"
 if errorlevel 1 goto :fail
 
-echo Installing Visual Studio Community 2022. This can take a while.
+echo Installing Visual Studio Community 2026. This can take a while.
 "%INSTALLER%" --passive --wait --norestart --add Microsoft.VisualStudio.Workload.NativeDesktop --add Microsoft.VisualStudio.Component.VC.CMake.Project --add Microsoft.VisualStudio.Component.TeamExplorer.MinGit --includeRecommended
 exit /b %errorlevel%
 
